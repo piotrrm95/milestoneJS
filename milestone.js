@@ -1,21 +1,21 @@
-/*Stwórz aplikację 'Moje taski na dedlajnie'
-1. Aplikacja powinna umożliwić dodawanie, usuwanie oraz edycje listy zadań. 
-Dla każdego z zadań użytkownik może podać tytuł oraz opis.
-2. Do aplikacji dodaj możliwość edycji istniejących zadań.
-*3. Stwórz możliwość wyszukiwania zadań (według podanej przez użytkownika frazy).
-*4. Wprowadź możliwość ustawiania statusu zadania, status powinien przyjmować wartości z zakresu 
-'To do', 'In progress', 'Done'.
-*5. Użyj local storage dla zachowania trwałości danych.*/
-
 window.onload = function () {
-    var taskName = document.getElementById('taskName');
-    var taskDescription = document.getElementById('taskDescription');
-    var addButton = document.getElementById('addButton');
-    var searchInput = document.getElementById('searchInput');
-    var searchButton = document.getElementById('searchButton');
-    var tasksContainer = document.getElementById('tasksContainer');
-    var objKey = 'tasks' //klucz pod którym będziemy pobierać wartości z localStorage
-    var searchKey = 'search';
+    let taskName = document.getElementById('taskName');
+    let taskDescription = document.getElementById('taskDescription');
+    let taskStatus = document.getElementById('status');
+    let addButton = document.getElementById('addButton');
+    let searchInput = document.getElementById('searchInput');
+    let searchButton = document.getElementById('searchButton');
+    let tasksContainer = document.getElementById('tasksContainer');
+    let editTask = document.getElementById('editTask');
+    let editDescript = document.getElementById('editDescript')
+    let editStatus = document.getElementById('editStatus')
+    let box = document.getElementById('editBox');
+    let span = document.getElementsByClassName("close")[0];
+    let confirmButton = document.getElementById('confirmButton');
+    let objKey = 'tasks';
+    let searchKey = 'search';
+    let current = localStorage.getItem(objKey);
+    let parsed = JSON.parse(current);
     showData();
 
     //obsługa zdarzenia dla przycisku 'Dodaj'
@@ -24,144 +24,162 @@ window.onload = function () {
     //obsługa zdarzenia dla przycisku 'Szukaj'
     searchButton.addEventListener('click', searchTask);
 
+    //dodawanie selecta ze statusem zadania
+    const optionsArr = ['To Do', 'In Progress', 'Done'];
+    for (let i = 0; i < optionsArr.length; i++) {
+        let option = document.createElement('option');
+        let optionEdt = document.createElement('option');
+        option.setAttribute("value", optionsArr[i]);
+        optionEdt.setAttribute("value", optionsArr[i]);
+        option.innerText = optionsArr[i];
+        optionEdt.innerText = optionsArr[i];
+        taskStatus.appendChild(option);
+        editStatus.appendChild(optionEdt);
+    }
     //dodanie nowego obiektu do tablicy obiektów i zapisanie w localStorage
     function addTask() {
-        var newTask = { name: taskName.value, description: taskDescription.value, id: randomId() };
-        var current = localStorage.getItem(objKey);
-        if (current == null) {
-            localStorage.setItem(objKey, JSON.stringify([newTask]));
+        let newTask = {
+            name: taskName.value,
+            description: taskDescription.value,
+            id: randomId(),
+            status: taskStatus.value,
+        };
+        if(taskName.value==''&&taskDescription.value==''){
+            alert("Are you sure you don't have any tasks to do? ;)")
         }
-        else {
-            var parsed = JSON.parse(current);
+        else if (current == null) {
+            localStorage.setItem(objKey, JSON.stringify([newTask]));
+        } else {
             parsed.push(newTask);
             localStorage.setItem(objKey, JSON.stringify(parsed));
         }
         showData(parsed);
     };
     //generowanie randomowego ID
-    function randomId() {
-        return (Date.now() / Math.random()) * 10000;
-    }
+    const randomId = () => {
+        return (Date.now() / Math.random()) * 10000
+    };
 
     //wyświetlanie w tabeli danych zapisanych w tablicy
     function showData() {
-        var currentObj = localStorage.getItem(objKey);
-        var parsedObj = JSON.parse(currentObj);
-        if (parsedObj != null) {
+        if (parsed != null) {
             tasksContainer.innerHTML = '';
-            for (var i = 0; i < parsedObj.length; i++) {
-                var nextRow = createRow(parsedObj[i], i);
+            for (let i = 0; i < parsed.length; i++) {
+                let nextRow = createRow(parsed[i], i);
                 tasksContainer.appendChild(nextRow);
             }
         }
     }
-
     //tworzenie komórki w tabeli w html
     function createCell(text) {
-        var nextTd = document.createElement('td');
+        let nextTd = document.createElement('td');
         nextTd.innerHTML = text;
         return nextTd;
     }
 
     //tworzenie wiersza w tabeli w html
     function createRow(obj) {
-        var nextTr = document.createElement('tr');
-        var cell1 = createCell(obj.name);
-        var cell2 = createCell(obj.description);
-        nextTr.appendChild(cell1);
-        nextTr.appendChild(cell2);
+        let nextTr = document.createElement('tr');
+        let cellName = createCell(obj.name);
+        cellName.setAttribute('class', obj.status)
+        let cellDescript = createCell(obj.description);
+        let cellAction = document.createElement('td');
+        nextTr.appendChild(cellName);
+        nextTr.appendChild(cellDescript);
 
         //dodawanie przycisków 'Usun' i 'Edytuj'
-        var actionButtonsArr = ['Usun', 'Edytuj']
-        for (var i = 0; i < actionButtonsArr.length; i++) {
-            var cell = document.createElement('td');
-            var actionButton = document.createElement('button');
-            actionButton.innerText = actionButtonsArr[i];
+        const actionButtonsArr = ['Edit', 'Delete']
+        for (let i = 0; i < actionButtonsArr.length; i++) {
+            let actionButton = document.createElement('button');
             actionButton.setAttribute('id', obj.id);
-            cell.appendChild(actionButton);
-            if (actionButtonsArr[i] == 'Usun') {
+            cellAction.appendChild(actionButton);
+            if (actionButtonsArr[i] == 'Delete') {
                 actionButton.addEventListener('click', removeTask);
-                actionButton.setAttribute('class', 'removeBtn');
+                actionButton.setAttribute('class', 'far fa-trash-alt')
+            } else {
+                actionButton.setAttribute('class', 'fas fa-edit')
+                actionButton.addEventListener('click', edit);
             }
-            else {
-                actionButton.addEventListener('click', editTask)
-            }
-            nextTr.appendChild(cell);
+            nextTr.appendChild(cellAction);
         }
-
-        //dodawanie selecta ze statusem zadania
-        var cell5 = document.createElement('td');
-        var inputStatus = document.createElement('select');
-        var optionsArr = ['To Do', 'In progress', 'Done'];
-        for (var i = 0; i < optionsArr.length; i++) {
-            var option = document.createElement('option');
-            var optionText = document.createTextNode(optionsArr[i]);
-            option.appendChild(optionText);
-            inputStatus.appendChild(option);
-            cell5.appendChild(inputStatus);
-        }
-        nextTr.appendChild(cell5);
         return nextTr;
     }
-
-    //usuwanie obiektu z tablicy
+    //usuwanie obiektu 
     function removeTask(event) {
-        var clickedButtonId = event.target.getAttribute('id');
-        var currentClickedRmv = localStorage.getItem(objKey);
-        var parsedClickedRmv = JSON.parse(currentClickedRmv);
-        var indexToRemove = parsedClickedRmv.findIndex((obj) => { return obj.id == clickedButtonId });
-        parsedClickedRmv.splice(indexToRemove, 1);
-        localStorage.setItem(objKey, JSON.stringify(parsedClickedRmv));
-        showData(parsedClickedRmv);
+        let clickedButtonId = event.target.getAttribute('id');
+        let indexToRemove = parsed.findIndex((obj) => {
+            return obj.id == clickedButtonId
+        });
+        parsed.splice(indexToRemove, 1);
+        localStorage.setItem(objKey, JSON.stringify(parsed));
+        showData(parsed);
     }
+
+
     //edycja obiektu
-    function editTask(event) {
-        addButton.removeEventListener('click', addTask);
-        var clickedButtonId = event.target.getAttribute('id');
-        var currentClickedEdt = localStorage.getItem(objKey);
-        var parsedClickedEdt = JSON.parse(currentClickedEdt);
-        var indexToUpdate = parsedClickedEdt.findIndex((obj) => { return obj.id == clickedButtonId });
-        var getObject = parsedClickedEdt[indexToUpdate];
-        taskName.value = getObject.name;
-        taskDescription.value = getObject.description;
-        addButton.addEventListener('click', updateTask);
-
-        //update obiektu
-        function updateTask() {
-            var updatedTask = { name: taskName.value, description: taskDescription.value, id: randomId() };
-            parsedClickedEdt[indexToUpdate] = updatedTask;
-            localStorage.setItem(objKey, JSON.stringify(parsedClickedEdt));//jeszcze raz wlozyc gdzies local storage
-            showData(parsedClickedEdt);
-            addButton.removeEventListener('click', updateTask);
-            addButton.addEventListener('click', addTask);
+    function edit(event) {
+        editTask.appendChild(taskStatus);
+        let clickedButtonId = event.target.getAttribute('id');
+        let indexToUpdate = parsed.findIndex((obj) => {
+            return obj.id == clickedButtonId
+        });
+        let getObject = parsed[indexToUpdate];
+        editTask.value = getObject.name;
+        editDescript.value = getObject.description;
+        editStatus.value = getObject.status;
+        box.style.display = "block";
+        span.onclick = function () {
+            box.style.display = "none";
         }
-    }
-
-    //szukanie obiektu
-    function searchTask() {
-        var searchResult = [];
-        var currentInSearch = localStorage.getItem(objKey);
-        var parsedInSearch = JSON.parse(currentInSearch);
-        for (var i = 0; i < parsedInSearch.length; i++) {
-            if (parsedInSearch[i].name == searchInput.value || parsedInSearch[i].description == searchInput.value) {
-                searchResult.push(parsedInSearch[i]);
-                localStorage.setItem(searchKey, JSON.stringify(searchResult))
+        window.onclick = function (event) {
+            if (event.target == box) {
+                box.style.display = "none";
             }
         }
-        var currentResult = localStorage.getItem(searchKey);
-        var parsedResult = JSON.parse(currentResult);
-        showSearchData(parsedResult);
+        confirmButton.onclick = function () {
+            let updatedTask = {
+                name: editTask.value,
+                description: editDescript.value,
+                id: randomId(),
+                status: editStatus.value
+            };
+            parsed[indexToUpdate] = updatedTask;
+            localStorage.setItem(objKey, JSON.stringify(parsed));
+            showData(parsed);
+            box.style.display = "none";
+        }
+    }
+    //szukanie obiektu
+    function searchTask() {
+        const searchResult = [];
+        for (let i = 0; i < parsed.length; i++) {
+            if (parsed[i].name == searchInput.value || parsed[i].description == searchInput.value) {
+                searchResult.push(parsed[i]);
+            }
+            localStorage.setItem(searchKey, JSON.stringify(searchResult))    
+        }
+        showSearchData();
     }
 
     function showSearchData() {
-        var currentInSearch = localStorage.getItem(searchKey);
-        var parsedInSearch = JSON.parse(currentInSearch);
-        if (parsedInSearch != null) {
+        let currentResult = localStorage.getItem(searchKey);
+        let parsedResult = JSON.parse(currentResult);
+        if (parsedResult.length != null) {
             tasksContainer.innerHTML = '';
-            for (var i = 0; i < parsedInSearch.length; i++) {
-                var nextRow = createRow(parsedInSearch[i], i);
+            for (var i = 0; i < parsedResult.length; i++) {
+                var nextRow = createRow(parsedResult[i], i);
                 tasksContainer.appendChild(nextRow);
             }
+            let refreshButton = document.createElement('button');
+            refreshButton.innerText = 'Refresh';
+            refreshButton.setAttribute('id', 'refreshButton')
+            refreshButton.addEventListener('click', refresh)
+            tasksContainer.appendChild(refreshButton);
         }
     }
+
+    function refresh() {
+        location.reload();
+    }
+
 }

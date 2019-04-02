@@ -4,31 +4,40 @@
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Moje taski na deadlajnie</title>
     <link rel="stylesheet" type="text/css" media="screen" href="milestone.css">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <script src="milestone2.js"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css"
+        integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css"
+        integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
+    <script src="milestone.js"></script>
 </head>
 
 <body>
-    <h3>Muszę to zrobić...</h3>
-    Zadanie:
-    <input id='taskName' type='text'>
-    Opis:
-    <input id='taskDescription' type='text'>
-    <button id='addButton'>Dodaj</button>
-    <input id='searchInput' type='text'>
-    <button id='searchButton'>Szukaj</button>
+    <div class = 'inputArea'>
+        <input id='taskName' type='text' placeholder="Task">
+        <input id='taskDescription' type='text' placeholder="Description">
+        <select id='status'></select>
+        <button id='addButton'>Add task!</button>
+        <input id='searchInput' type='text'>
+        <button id='searchButton'>Search</button>
+    </div>
     <table>
-        <tbody id='tasksContainer'>
-
-        </tbody>
+        <thead>
+            <th>Task</th>
+            <th>Description</th>
+            <th></th>
+        </thead>
+        <tbody id='tasksContainer'></tbody>
     </table>
-    <div id="myModal" class="modal">
+    <div id="editBox" class="modal">
         <div class="modal-content">
             <span class="close">&times;</span>
             <input id='editTask' type='text' placeholder="Task">
             <input id='editDescript' type='text' placeholder="Description">
+            <select id='editStatus'></select>
+            <button id='confirmButton'>Confirm</button>
         </div>
     </div>
 
