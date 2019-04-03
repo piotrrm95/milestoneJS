@@ -59,7 +59,6 @@ window.onload = function () {
     const randomId = () => {
         return (Date.now() / Math.random()) * 10000
     };
-
     //wyświetlanie w tabeli danych zapisanych w tablicy
     function showData() {
         if (parsed != null) {
@@ -76,29 +75,31 @@ window.onload = function () {
         nextTd.innerHTML = text;
         return nextTd;
     }
-
     //tworzenie wiersza w tabeli w html
     function createRow(obj) {
         let nextTr = document.createElement('tr');
         let cellName = createCell(obj.name);
         cellName.setAttribute('class', obj.status)
+        cellName.setAttribute('title', obj.status)
         let cellDescript = createCell(obj.description);
         let cellAction = document.createElement('td');
         nextTr.appendChild(cellName);
         nextTr.appendChild(cellDescript);
 
         //dodawanie przycisków 'Usun' i 'Edytuj'
-        const actionButtonsArr = ['Edit', 'Delete']
+        const actionButtonsArr = ['Edit', 'Delete'];
         for (let i = 0; i < actionButtonsArr.length; i++) {
-            let actionButton = document.createElement('button');
+            let actionButton = document.createElement('i');
             actionButton.setAttribute('id', obj.id);
             cellAction.appendChild(actionButton);
             if (actionButtonsArr[i] == 'Delete') {
                 actionButton.addEventListener('click', removeTask);
-                actionButton.setAttribute('class', 'far fa-trash-alt')
+                actionButton.setAttribute('class', 'far fa-trash-alt');
+                actionButton.setAttribute('title', 'Remove');
             } else {
-                actionButton.setAttribute('class', 'fas fa-edit')
                 actionButton.addEventListener('click', edit);
+                actionButton.setAttribute('class', 'fas fa-edit')
+                actionButton.setAttribute('title', 'Edit')
             }
             nextTr.appendChild(cellAction);
         }
@@ -114,8 +115,6 @@ window.onload = function () {
         localStorage.setItem(objKey, JSON.stringify(parsed));
         showData(parsed);
     }
-
-
     //edycja obiektu
     function edit(event) {
         editTask.appendChild(taskStatus);
@@ -172,14 +171,12 @@ window.onload = function () {
             }
             let refreshButton = document.createElement('button');
             refreshButton.innerText = 'Refresh';
-            refreshButton.setAttribute('id', 'refreshButton')
+            refreshButton.setAttribute('class', 'btn btn-dark btn-sm')
             refreshButton.addEventListener('click', refresh)
             tasksContainer.appendChild(refreshButton);
         }
     }
-
     function refresh() {
         location.reload();
     }
-
 }
